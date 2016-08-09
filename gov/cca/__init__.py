@@ -403,56 +403,56 @@ class TypeMap(object):
       """
       raise NotImplementedError("Abstract Class!")
 
-   def putIntArray(self, key, list value):
+   def putIntArray(self, key, value):
       """
       input: string key, int list value
       output: void 
       """
       raise NotImplementedError("Abstract Class!")
 
-   def putLongArray(self, key, list value):
+   def putLongArray(self, key, value):
       """
       input: string key, long list value
       output: void
       """
       raise NotImplementedError("Abstract Class!")
 
-   def putFloatArray(self, key, list value):
+   def putFloatArray(self, key, value):
       """
       input: string key, float list value
       output: void
       """
       raise NotImplementedError("Abstract Class!")
 
-   def putDoubleArray(self, key, list value):
+   def putDoubleArray(self, key, value):
       """
       input: string key, double list value
       output: void
       """
       raise NotImplementedError("Abstract Class!")
 
-   def putFcomplexArray(self, key, list value):
+   def putFcomplexArray(self, key, value):
       """
       input: string key, fcomplex list value
       output: void
       """
       raise NotImplementedError("Abstract Class!")
 
-   def putDcomplexArray(self, key, list value):
+   def putDcomplexArray(self, key, value):
       """
       input: string key, dcomplex list value
       output: void
       """
       raise NotImplementedError("Abstract Class!")
 
-   def putStringArray(self, key, list value):
+   def putStringArray(self, key,  value):
       """
       input: string key, string list value
       output: void
       """
       raise NotImplementedError("Abstract Class!")
 
-   def putBoolArray(self, key, list value):
+   def putBoolArray(self, key, value):
       """
       input: string key, bool list value
       output: void
