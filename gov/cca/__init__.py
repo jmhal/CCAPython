@@ -1,8 +1,9 @@
-VERSION="0.1a"
+VERSION = "0.1a"
 
 class Port(object):
    def __init__(self):
       raise NotImplementedError("Abstract Class!")  
+
 
 class Component(object):
    def __init__(self):
@@ -209,11 +210,12 @@ class ConnectionID(object):
       """
       raise NotImplementedError("Abstract Class!")
 
-def Type(object):
+
+class Type(object):
    none, Int, Long, Float, Double, Fcomplex, Dcomplex, String, Bool, IntArray, LongArray, FloatArray, DoubleArray, FcomplexArray, DComplexArray, StringArray, BoolArray = range(17)
    
    def __init__(self):
-      raise NotImplementedError("Abstract Class!")
+      raise NotImplementedError("Enumeration!")
 
 class TypeMap(object):
    def __init__(self):
@@ -500,4 +502,34 @@ class TypeMap(object):
       output: a Type object
       """
       raise NotImplementedError("Abstract Class!")
+
+
+class CCAExceptionType(object):
+   Unexpected = -1
+   Nonstandard = 1
+   PortNotDefined = 2
+   PortAlreadyDefined = 3
+   PortNotConnected = 4
+   PortNotInUse = 5
+   UsesPortNotReleased = 6
+   BadPortName = 7
+   BadPortType = 8
+   BadProperties = 9
+   BadPortInfo = 10
+   OutOfMemory = 11
+   NetworkError = 12
+   def __init__(self):
+      raise NotImplementedError("Enumeration!")
+
+class CCAException(Exception):
+   def __init__(self):
+      raise NotImplementedError("Abstract Class!")
+   
+   def getCCAExceptionType(self):
+      """
+      input: none 
+      output: a CCAException object
+      """
+      raise NotImplementedError("Abstract Class!")
+
 
