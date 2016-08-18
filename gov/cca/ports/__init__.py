@@ -17,7 +17,7 @@ class BuilderService(Port):
 
    def createInstance(self, instanceName, className, properties):
       """
-      input: a string instanceName, a string className, a gov.ccaTypeMap properties)
+      input: a string instanceName, a string className, a gov.ccaTypeMap properties
       output: a gov.cca.ComponentID object
       throws CCAException
       """
