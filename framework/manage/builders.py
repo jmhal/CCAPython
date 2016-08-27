@@ -1,9 +1,16 @@
 from gov.cca import AbstractFramework
 from gov.cca.ports import BuilderService
 
-class Builder(AbstractFramework, BuilderService):
+class FrameworHandle(AbstractFramework, BuilderService):
    def __init__(self):
-      pass
+      # Maps a string corresponding to a component instance name to a pair of gov.cca.Component/gov.cca.Services
+      self.d_instance = {}
+
+      # Maps the component instance name string and the port name string to the gov.cca.ConnectionID
+      self.d_connection = {}
+
+      # Maps instance names to class names
+      self.d_aliases = {}
 
    # New Methods
    def lookupPort(self, componentID, portName):
