@@ -18,5 +18,17 @@ class TypeMismatchException(CCAException):
    def getActualType(self):
       return self.ActualType
 
+class PortNotFoundException(CCAException):
+   def __init__(self, portName):
+      self.portName = portName
 
+   def __str__(self):
+      return "Port not found: " + self.portName
+
+class InstanceNotFoundException(CCAException):
+   def __init__(self, instanceName):
+      self.instanceName = instanceName
+
+   def __str__(self):
+      return "Instance not found: " + self.instanceName
 

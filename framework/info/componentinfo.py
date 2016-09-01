@@ -5,6 +5,9 @@ class ComponentID(gov.cca.ComponentID):
    def __init__(self, name):
       self.name = name
   
+   def initialize(self, name):
+      self.name = name 
+   
    def getInstanceName(self):
       return self.name
 

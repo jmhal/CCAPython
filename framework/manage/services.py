@@ -1,13 +1,20 @@
 from gov.cca import Services
 from gov.cca.ports import ConnectionEventService
+from framework.info.connectioninfo import ConnectionEvent
+from framework.common.typemap import TypeMapDict
+from framework.common.exceptions import PortNotFoundException
 
-class ServiceHandle(Services, ConnectionEventService):
+class ServicesHandle(Services, ConnectionEventService):
    def __init__(self):
       # Maps strings port names do gov.cca.Ports objects and gov.cca.TypeMap properties objects.
+      # (portName) -> (Port, TypeMap)
       self.d_usesports = {}
       self.d_providesports = {}
     
-      # Maps a gov.cca.ports.EventType to a list of gov.cca.ports.EventListeners
+      # Maps ports names to ports types
+      self.d_portType = {}
+
+      # Maps a gov.cca.ports.EventType to a list of gov.cca.ports.EventListener
       self.d_listeners = {}
 
    # New methods
@@ -46,7 +53,7 @@ class ServiceHandle(Services, ConnectionEventService):
       input: none
       output: a list of strings
       """
-      pass
+      
 
    def getUsedPortNames(self):
       """
@@ -60,21 +67,39 @@ class ServiceHandle(Services, ConnectionEventService):
       input: a string portName, a gov.cca.Port object
       output: void
       """
-      pass
+      if portName not in d_usesports.keys():
+         raise PortNotFoundException(portName)
+      d_usesports[portName] = (port, TypeMapDict())
+      return
 
    def getProvidesPort(self, name):
       """
       input: string name
       output: void
       """
-      pass
-
+      if name not in self.d_providesports.keys():
+         raise PortNotFoundException(name) 
+      return d_providesports[name][TypeMapDict()]
+         
    def notifyConnectionEvent(self, portName, event):
       """
+      This method will notify the component from the calling Services of an event
       input: string portName, a gov.cca.ports.EventType event)
       output: void
       """
-      pass
+      listenerList = [] 
+      for ev in d_listeners.keys():
+         if ev == event:
+            listenerList += d_listeners[event]
+       
+      tm = TypeMapDict()
+      tm.putString("cca.PortName", portName)
+      tm.putString("cca.PortType", d_portType[portName])
+      ce = ConnectionEvent(event, tm) 
+      for listener in listenerList:
+         listener.connectionActivity(ce)
+      return
+
 
    # Methods from gov.cca.Services
    def getComponentID(self):

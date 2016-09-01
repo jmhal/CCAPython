@@ -1,15 +1,34 @@
-from gov.cca import AbstractFramework
-from gov.cca.ports import BuilderService
+import uuid
 
-class FrameworHandle(AbstractFramework, BuilderService):
+from gov.cca import AbstractFramework
+from gov.cca import Port
+from gov.cca.ports import BuilderService
+from gov.cca.ports import EventType
+from framework.info.connectioninfo import ConnectionID
+from framework.info.componentinfo import ComponentID
+from framework.common.exceptions import InstanceNotFoundException
+from framework.manage.services import ServicesHandle
+
+class ComponentInstance():
+   def __init__(self, component, services):
+      self.component = component
+      self.services = services
+
+      # Maps a string port name to a gov.cca.ConnectionID
+      self.usesConnection = {}
+
+      # Maps a string port name to a list of gov.cca.ConnectionID
+      # Has to be initialized with every provides port from the component
+      self.providesConnection = {}
+      
+class FrameworkHandle(AbstractFramework, BuilderService):
    def __init__(self):
-      # Maps a string corresponding to a component instance name to a pair of gov.cca.Component/gov.cca.Services
+      # Maps a string corresponding to a component instance name a ComponentInstance object
+      # (instanceName) -> (ComponentInstance)
       self.d_instance = {}
 
-      # Maps the component instance name string and the port name string to the gov.cca.ConnectionID
-      self.d_connection = {}
-
       # Maps instance names to class names
+      # (instanceName) -> (className)   
       self.d_aliases = {}
 
    # New Methods
@@ -20,7 +39,10 @@ class FrameworHandle(AbstractFramework, BuilderService):
       input: gov.cca.ComponentID componentID, string portName
       output: a gov.cca.Port object
       """
-      pass
+      instanceName = componentID.getInstanceName() 
+      if instanceName not it self.d_instance.keys():
+         raise InstanceNotFound(instanceName)
+      return self.d_instance[instanceName].services.getProvidesPort(portName)
   
    def provideRequestedServices(self, componentID, portName, portType)
       """
@@ -28,7 +50,20 @@ class FrameworHandle(AbstractFramework, BuilderService):
       input: a gov.cca.ComponentID object, a string portName, a string portType
       output: void
       """
-      pass
+      instanceName = componentID.getInstanceName()
+      if portType == "gov.cca.ports.BuilderServices" :
+         userSvcs = self.d_instance[instanceName].services
+            
+      else if portType == "gov.cca.ports.ConnectionEventService":
+
+      return
+
+   def getUniqueName(self, requestedName):
+      """
+      input: a string requestedName
+      output: a string that is unique in the framework scope
+      """
+      return requestedName + "::" + str(uuid.uuid4())
 
    # Methods from AbstractFramework
    def createTypeMap(self):
@@ -53,7 +88,16 @@ class FrameworHandle(AbstractFramework, BuilderService):
       output: a Services object
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")
+      nil = None
+      cid = ComponentID(None)
+      uniqueName = getUniqueName(selfInstanceName)
+      cid.initialize(uniqueName)
+      svcs = ServicesHandle()
+      svcs.initialize(self, cid, selfProperties) 
+      self.d_instance[uniqueName].component = nil;
+      self.d_instance[uniqueName].svcs = svcs
+      self.d_aliases[uniqueName] = selfClassName
+      return svcs
 
    def releaseServices(self, services):
       """
@@ -94,7 +138,29 @@ class FrameworHandle(AbstractFramework, BuilderService):
       output: a gov.cca.ConnectionID object
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      connectionID = ConnectionID()
+      userName = user.getInstanceName()
+      provName = provider.getInstanceName()
+      if (userName not it d_instance.keys()) and (provName not it d_instance.keys()) :
+         userSvc = d_instance[userName].services
+         provSvc = d_instance[provName].services
+
+         provSvc.notifyConnectionEvent(provindingPortName, EventType.ConnectPending)
+         userSvc.notifyConnectionEvent(usingPortName, EventType.ConnectPending)
+
+         port = provSvc.getProvidesPort(providingPortName)   
+         
+         userSvc.bindPort(usingPortName, Port)
+         connectID = ConnectionID()
+         connectID.initialize(provider, providingPortName, user, usingPortName, 0)
+
+         d_instance[userName].usesConnection[usingPortName] = connectID
+         d_instance[provName].providesConnection[provindingPortName].append(connectID)
+
+         provSvc.notifyConnectionEvent(providingPortName, EventType.Connected)
+         usesSvc.notifyConnectionEvent(usingPortName, EventType.Connected)
+    return connectionID
+
 
    def disconnect(self, connID, timeout):
       """
