@@ -9,6 +9,31 @@ from framework.info.componentinfo import ComponentID
 from framework.common.exceptions import InstanceNotFoundException
 from framework.manage.services import ServicesHandle
 
+def connectionIDCompare(a, b):
+   """
+   This method compares two ConnectionID objects, returns True if they are equal, False otherwise.
+   """
+   if a == b :
+      return True
+   sa = a.getUser().getInstanceName()
+   sb = b.getUser().getInstanceName()
+   if sa != sb :
+      return False
+   sa = a.getUserPortName()
+   sb = b.getUserPortName()
+   if sa != sb :
+      return False
+  
+   sa = a.getProvider().getInstanceName()
+   sb = b.getProvider().getInstanceName()
+   if sa != sb :
+      return False
+   sa = a.getProviderPortName()
+   sb = b.getProviderPortName()
+    if sa != sb :
+      return False
+   return True
+
 class ComponentInstance():
    def __init__(self, component, services):
       self.component = component
@@ -43,7 +68,10 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       if instanceName not it self.d_instance.keys():
          raise InstanceNotFound(instanceName)
       return self.d_instance[instanceName].services.getProvidesPort(portName)
-  
+
+   def isProvidedService(self, portType):
+      pass
+
    def provideRequestedServices(self, componentID, portName, portType)
       """
       Provides access to two ports implemented by the framework itself: BuilderService and ConnectionEventService
@@ -57,6 +85,34 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       else if portType == "gov.cca.ports.ConnectionEventService":
 
       return
+
+   def addServiceProvider(self, portType, componentID, provider):
+      """
+      input: a string portType, a gov.cca.ComponenteID componentID, a gov.cca.ports.ServiceProvider provider
+      output: none
+      """
+      pass
+
+   def addServicePort(self, portType, port):
+      """
+      input: a string portType, gov.cca.Ports port
+      output: none
+      """
+      pass
+
+   def removeFromRegistry(self, portType):
+      """
+      input: a string portType
+      output: none
+      """
+      pass
+
+   def setInstanceRelease(self, componentID, callback):   
+      """
+      input: a gov.cca.ComponentID componentID, a gov.cca.ComponentRelease callback2 
+      output: none
+      """
+      pass
 
    def getUniqueName(self, requestedName):
       """

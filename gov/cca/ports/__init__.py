@@ -219,3 +219,54 @@ class ComponentRepository(Port):
       throws CCAException
       """
       raise NotImplementedError("Abstract Class!")
+
+class ServiceProvider(Port):
+   def __init__(self):
+      raise NotImplementedError("Abstract Class!")
+
+   def createService(self, portType):
+      """
+      input: a string portType
+      output: a string with the name of the port
+      throws CCAException
+      """
+      raise NotImplementedError("Abstract Class!")
+
+   def destroyService(self, portName):
+      """
+      input: a string portName
+      output: none
+      throws CCAException
+      """
+      raise NotImplementedError("Abstract Class!")
+
+class ServiceRegistry(Port):
+   def __init__(self):
+      raise NotImplementedError("Abstract Class!")
+
+   def addService(self, serviceType, portProvider):
+      """
+      input: a string serviceType, a gov.cca.ports.ServiceProvider object portProvider
+      output: a boolean
+      throws CCAException
+      """
+      raise NotImplementedError("Abstract Class!")
+
+   def addSingletonService(self, serviceType, server):
+      """
+      input: a string serviceType, a gov.cca.Port object server
+      output: a boolean
+      throws CCAException
+      """
+      raise NotImplementedError("Abstract Class!")
+
+   def removeService(self, serviceType):
+      """
+      input: a string serviceType
+      output: none
+      throws CCAException
+      """
+      raise NotImplementedError("Abstract Class!")
+
+
+

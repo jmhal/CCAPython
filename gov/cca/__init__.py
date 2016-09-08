@@ -4,12 +4,22 @@ class Port(object):
    def __init__(self):
       raise NotImplementedError("Abstract Class!")  
 
-
 class Component(object):
    def __init__(self):
       raise NotImplementedError("Abstract Class!")
    
    def setServices(self, services):
+      """
+      input: services object.
+      output: void 
+      """
+      raise NotImplementedError("Abstract Class!")
+
+class ComponentRelease(object):
+   def __init__(self):
+      raise NotImplementedError("Abstract Class!")
+   
+   def releaseServices(self, services):
       """
       input: services object.
       output: void 
@@ -528,6 +538,13 @@ class CCAException(Exception):
    def getCCAExceptionType(self):
       """
       input: none 
+      output: a CCAException object
+      """
+      raise NotImplementedError("Abstract Class!")
+
+   def setCCAExceptionType(self, exceptionType):
+      """
+      input: a field from CCAExceptionType 
       output: a CCAException object
       """
       raise NotImplementedError("Abstract Class!")

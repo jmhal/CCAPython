@@ -11,6 +11,10 @@ class TypeMismatchException(CCAException):
 
    def getCCAExceptionType(self):
       return self.exceptionType
+   
+   def setCCAExceptionType(self, exceptionType):
+      self.exceptionType = exceptionType
+      return
 
    def getRequestedType(self):
       return self.requestedType
@@ -21,6 +25,14 @@ class TypeMismatchException(CCAException):
 class PortNotFoundException(CCAException):
    def __init__(self, portName):
       self.portName = portName
+      self.exceptionType = CCAExceptionType.BadPortName
+
+   def getCCAExceptionType(self):
+      return self.exceptionType
+   
+   def setCCAExceptionType(self, exceptionType):
+      self.exceptionType = exceptionType
+      return
 
    def __str__(self):
       return "Port not found: " + self.portName
@@ -29,6 +41,13 @@ class InstanceNotFoundException(CCAException):
    def __init__(self, instanceName):
       self.instanceName = instanceName
 
+   def getCCAExceptionType(self):
+      return self.exceptionType
+   
+   def setCCAExceptionType(self, exceptionType):
+      self.exceptionType = exceptionType
+      return
+   
    def __str__(self):
       return "Instance not found: " + self.instanceName
 
