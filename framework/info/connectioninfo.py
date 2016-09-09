@@ -31,6 +31,19 @@ class ConnectionID(gov.cca.ConnectionID):
       """
       return properties
 
+   def isSame(self, cid):
+      """
+      This method returns True if the objects stand for the same connection.
+      input: a ConnectionID cid
+      ouput: boll
+      """
+      if self.provider.getInstanceName() == cid.provider.getInstanceName():
+         if self.user.getInstanceName() == cid.user.getInstanceName():
+            if self.providerPortName == cid.providerPortName :
+               if self.userPortName == cid.userPortName:
+                  return True
+      else return False
+
    # Methods from gov.cca.ConnectionID
    def getProvider(self):
       return self.provider

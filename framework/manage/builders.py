@@ -9,30 +9,11 @@ from framework.info.componentinfo import ComponentID
 from framework.common.exceptions import InstanceNotFoundException
 from framework.manage.services import ServicesHandle
 
-def connectionIDCompare(a, b):
-   """
-   This method compares two ConnectionID objects, returns True if they are equal, False otherwise.
-   """
-   if a == b :
-      return True
-   sa = a.getUser().getInstanceName()
-   sb = b.getUser().getInstanceName()
-   if sa != sb :
-      return False
-   sa = a.getUserPortName()
-   sb = b.getUserPortName()
-   if sa != sb :
-      return False
-  
-   sa = a.getProvider().getInstanceName()
-   sb = b.getProvider().getInstanceName()
-   if sa != sb :
-      return False
-   sa = a.getProviderPortName()
-   sb = b.getProviderPortName()
-    if sa != sb :
-      return False
-   return True
+class ProviderEntry():
+   def __init__(self, componentID, serviceProvider):
+      self.componentID = componentID
+      self.serviceProvider = serviceProvider
+      return
 
 class ComponentInstance():
    def __init__(self, component, services):
@@ -42,8 +23,9 @@ class ComponentInstance():
       # Maps a string port name to a gov.cca.ConnectionID
       self.usesConnection = {}
 
-      # Maps a string port name to a list of gov.cca.ConnectionID
+      # Maps a string port name to a set of gov.cca.ConnectionID
       # Has to be initialized with every provides port from the component
+      # I'm considering that each component has only one connection to another component through the same uses/provides port.
       self.providesConnection = {}
       
 class FrameworkHandle(AbstractFramework, BuilderService):
@@ -51,6 +33,12 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       # Maps a string corresponding to a component instance name a ComponentInstance object
       # (instanceName) -> (ComponentInstance)
       self.d_instance = {}
+
+      # (string portType) -> (ProviderEntry)
+      self.d_serviceProviders = {}
+
+      # (string portType) -> (gov.cca.Port)
+      self.d_servicePorts = []
 
       # Maps instance names to class names
       # (instanceName) -> (className)   
@@ -70,7 +58,15 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       return self.d_instance[instanceName].services.getProvidesPort(portName)
 
    def isProvidedService(self, portType):
-      pass
+      """
+      input: a string portType
+      output: a boolean
+      """
+      if portType == "gov.cca.ports.ConnectionEventService" or portType == "gov.cca.ports.ServiceRegistry" :
+         return True
+      if portType in self.d_serviceProviders.keys() or portType in self.d_servicePorts.keys():
+         return True
+      return False
 
    def provideRequestedServices(self, componentID, portName, portType)
       """
@@ -78,12 +74,29 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       input: a gov.cca.ComponentID object, a string portName, a string portType
       output: void
       """
-      instanceName = componentID.getInstanceName()
-      if portType == "gov.cca.ports.BuilderServices" :
-         userSvcs = self.d_instance[instanceName].services
-            
-      else if portType == "gov.cca.ports.ConnectionEventService":
-
+      if portType == "gov.cca.ports.ConnectionEventService" : 
+         userSvcs = self.d_instance[componentID.getInstanceName()].services
+         uniqueName = getUniqueName("connectionEventer")
+         svcs = getServices(uniqueName, portType, 0)
+         svcs.addProvidesPort(userSvcs, "ConnectionEventService", portType, 0)
+         connect(componentID, portName, svcs.getComponentID(), "ConnectionEventService")
+      else if portType == "gov.cca.ports.ServiceRegistry" :
+         userSvcs = self.d_instance[componentID.getInstanceName()].services
+         uniqueName = getUniqueName("registryService")
+         svcs = getServices(uniqueName, portType, 0)
+         svcs.addProvidesPort(userSvcs, "RegistryService", portType, 0)
+         connect(componentID, portName, svcs.getComponentID(), "RegistryService")
+      else if portType in self.d_servicePorts.keys() :
+         port = self.d_servicePorts[portType]
+         uniqueName = getUniqueName("singletonPort")
+         svcs = getServices(uniqueName, portType, 0)
+         svcs.addProvidesPort(port, "AvailService", portType, 0)
+         connect(componentID, portName, svcs.getComponentID(), "AvailService")
+      else if portType in self.d_serviceProviders.keys() :
+         pe = d_servicesProviders[portType]
+         sp = pe.serviceProvider
+         portName = sp.createService(portType) 
+         connect(componentID, portName, pe.componentID, portName)
       return
 
    def addServiceProvider(self, portType, componentID, provider):
@@ -120,6 +133,13 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a string that is unique in the framework scope
       """
       return requestedName + "::" + str(uuid.uuid4())
+
+   def removeInstance(self, instanceName):
+      """
+      input: a string instanceName
+      output: a integer
+      """
+      pass
 
    # Methods from AbstractFramework
    def createTypeMap(self):
