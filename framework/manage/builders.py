@@ -1,4 +1,5 @@
 import uuid
+import importlib
 
 from gov.cca import AbstractFramework
 from gov.cca import Port
@@ -8,6 +9,7 @@ from framework.info.connectioninfo import ConnectionID
 from framework.info.componentinfo import ComponentID
 from framework.common.exceptions import InstanceNotFoundException
 from framework.manage.services import ServicesHandle
+from framework.common.typemap import TypeMapDict
 
 class ProviderEntry():
    def __init__(self, componentID, serviceProvider):
@@ -16,8 +18,9 @@ class ProviderEntry():
       return
 
 class ComponentInstance():
-   def __init__(self, component, services):
+   def __init__(self, component, release, services):
       self.component = component
+      self.release = release
       self.services = services
 
       # Maps a string port name to a gov.cca.ConnectionID
@@ -104,28 +107,36 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       input: a string portType, a gov.cca.ComponenteID componentID, a gov.cca.ports.ServiceProvider provider
       output: none
       """
-      pass
+      pe = ProviderEntry(componentID, provider)
+      self.d_serviceProviders[portType] = pe
+      return
 
    def addServicePort(self, portType, port):
       """
       input: a string portType, gov.cca.Ports port
       output: none
       """
-      pass
+      self.d_servicePorts[portType] = port
+      return 
 
    def removeFromRegistry(self, portType):
       """
       input: a string portType
       output: none
       """
-      pass
+      if portType != "gov.cca.ports.BuilderService":
+         self.d_servicePorts.pop(portType, None)
+         self.d_serviceProviders.pop(portType, None
+      return 
 
    def setInstanceRelease(self, componentID, callback):   
       """
       input: a gov.cca.ComponentID componentID, a gov.cca.ComponentRelease callback2 
       output: none
       """
-      pass
+      instanceName = componentID.getInstanceName()
+      self.d_instance[instanceName].release = callback
+      return
 
    def getUniqueName(self, requestedName):
       """
@@ -139,7 +150,25 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       input: a string instanceName
       output: a integer
       """
-      pass
+      if instanceName not in self.d_instance.keys():
+         return 0
+       
+      connectionIDs = []
+
+      # Collect all connection IDs
+      for connection in self.d_instance[instanceName].usesConnection:
+         connectionIDs.append(self.d_instance[instanceName].usesConnection[connection])
+
+      # Destroy all connections
+      for id_ in connectionIDs:
+         disconnect(id_, 0.0)
+       
+      # Remove the instance itself
+      instance = self.d_instance[instanceName]
+      instance.release.releaseServices(instance.services)
+      self.d_instance.pop(instanceName, None)
+   
+      return 1
 
    # Methods from AbstractFramework
    def createTypeMap(self):
@@ -148,7 +177,7 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a TypeMap object
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")
+      return TypeMapDict() 
 
    def createEmptyFramework(self):
       """
@@ -156,7 +185,7 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a AbstractFramework object
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")
+      return FrameworkHandle()
 
    def getServices(self, selfInstanceName, selfClassName, selfProperties):
       """
@@ -169,9 +198,9 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       uniqueName = getUniqueName(selfInstanceName)
       cid.initialize(uniqueName)
       svcs = ServicesHandle()
-      svcs.initialize(self, cid, selfProperties) 
-      self.d_instance[uniqueName].component = nil;
-      self.d_instance[uniqueName].svcs = svcs
+      svcs.initialize(self, cid, selfProperties, True) 
+      self.d_instance[uniqueName].component = None
+      self.d_instance[uniqueName].services = svcs
       self.d_aliases[uniqueName] = selfClassName
       return svcs
 
@@ -181,7 +210,19 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a AbstractFramework object
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")
+      if services != None:
+         cid = services.getComponentID()
+         instanceName = cid.getInstanceName()
+         if instanceName in self.d_aliases.keys() :
+            n_removed_instances = removeInstance(instanceName)
+            n_removed_aliases = self.d_aliases.pop(instanceName, None)
+            if n_removed_instances != 1 or n_remove_aliases == None :
+               print "Unexpected behavior removind instances."
+               print "n_removed_instances: " + n_removed_instances
+               print "n_removed_aliases: " + n_removed_aliases
+         else :
+            print "Error: releaseServices() called on services object not created by getServices()"
+      return
 
    def shutdownFramework(self):
       """
@@ -189,16 +230,38 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: void
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")
+      for instanceName in self.d_instance:
+         removeInstance(instanceName)
   
    # Methods from BuilderService
    def createInstance(self, instanceName, className, properties):
       """
-      input: a string instanceName, a string className, a gov.ccaTypeMap properties
+      Our components are Python classes. The className is in the format xxx.xxx.xxx.Class, where the xxx. 
+      stands for the module to be imported and the Class is the name of the class. The xxx. part may be
+      repeated. For example, in doe.cca.Library.GaussianElimination, doe.cca.Library is the module name
+      and GaussianElimination is the class. 
+      We could, in theory, use the properties TypeMap to pass parameters to the component object constructor.
+      But I will not do it. Let the calling entity call a initialize method.
+      input: a string instanceName, a string className, a gov.cca.TypeMap properties
       output: a gov.cca.ComponentID object
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      moduleName = className.split('.')[0:-1]
+      moduleName = ".".join(moduleName)
+      className_ = className.split('.')[-1]
+      class_ =  getattr(importlib.import_module(moduleName), className_)
+      component = class_() 
+
+      uniqueName = getUniqueName(instanceName)
+      cid = ComponentID(None)
+      cid.initiliaze(uniqueName)
+      services = ServicesHandle()
+      services.initialize(self, cid, properties, False)
+      self.d_instance[uniqueName].component = component
+      self.d_instance[uniqueName].services = services
+      component.setServices(services)
+
+      return cid
 
    def getDeserialization(self, s):
       """
