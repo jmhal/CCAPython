@@ -269,7 +269,8 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a gov.cca.ComponentID object
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      print "This is not implemented yet!!!"
+      return
 
    def connect(self, user, usingPortName, provider, providingPortName):
       """
@@ -280,7 +281,7 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       connectionID = ConnectionID()
       userName = user.getInstanceName()
       provName = provider.getInstanceName()
-      if (userName not it d_instance.keys()) and (provName not it d_instance.keys()) :
+      if (userName in d_instance.keys()) and (provName in d_instance.keys()) :
          userSvc = d_instance[userName].services
          provSvc = d_instance[provName].services
 
@@ -290,16 +291,14 @@ class FrameworkHandle(AbstractFramework, BuilderService):
          port = provSvc.getProvidesPort(providingPortName)   
          
          userSvc.bindPort(usingPortName, Port)
-         connectID = ConnectionID()
-         connectID.initialize(provider, providingPortName, user, usingPortName, 0)
+         connectID.initialize(provider, providingPortName, user, usingPortName, None)
 
          d_instance[userName].usesConnection[usingPortName] = connectID
-         d_instance[provName].providesConnection[provindingPortName].append(connectID)
+         d_instance[provName].providesConnection[provindingPortName].add(connectID)
 
          provSvc.notifyConnectionEvent(providingPortName, EventType.Connected)
          usesSvc.notifyConnectionEvent(usingPortName, EventType.Connected)
     return connectionID
-
 
    def disconnect(self, connID, timeout):
       """
@@ -307,7 +306,43 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: void
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      userName = connID.getUser().getInstanceName()
+      userPortName = connID.getUserPortName()
+      provName = connID.getProvider().getInstanceName()
+      provPortName = connID.getProviderPortName()
+
+      print "Disconnecting " + userName + "." + userPortName + "-->" + provName + "." + provPortName
+
+      userSvcs = None
+      provSvcs = None
+      n_removed_user = 0
+      n_removed_provider = 0
+
+      if userName in self.d_instance :
+         userSvcs = self.d_instance[userName].services
+      else:
+         print "Unable to find instance: " + userName
+      if provName in self.d_instance:
+         provSvcs = self.d_instance[provName].services
+      else:
+         print "Unable to find instance: " + provName
+
+      if provSvcs != None and userSvcs != None :
+         userSvcs.notifyConnectionEvent(userPortName, EventType.DisconnectPending)
+         provSvcs.notifyConnectionEvent(provPortName, EventType.DisconnectPending)
+         
+         if userName in self.d_instance:
+            n_removed_user = self.d_instance.pop(userName, 0)
+         if provName in self.d_instance and provPortName in self.d_instance[provName].providesConnection :
+            n_removed_provider = self.d_instance[provName].providesConnection[provPortName].remove(connID)
+            if len(self.d_instance[provName].providesConnection[provPortName]) == 0:
+               self.d_instance[provName].providesConnection.pop(provPortName, None)
+         
+         userSvcs.notifyConnectionEvent(userPortName, EventType.Disconnected)
+         provSvcs.notifyConnectionEvent(provPortName, EventType.Disconnected)
+      
+      return   
+
 
    def disconnectAll(self, id1, id2, timeout):
       """
@@ -315,7 +350,17 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: void
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      userName = id1.getInstanceName()
+      provName = id2.getInstanceName()
+      cache = []
+      if userName in self.d_instance :
+         for conn in self.d_instance[userName].usesConnection:
+            if self.d_instance[userName].usesConnection[conn].getProvider().getInstanceName() == provName:
+               cache.append(self.d_instance[userName].usesConnection[conn])
+
+      for connID in cache:
+         disconnect(connID, timeout)
+      return 
 
    def destroyInstance(self, toDie, timeout):
       """
@@ -323,7 +368,8 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: void
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      removeInstance(toDie.getInstanceName())
+      return
 
    def getComponentProperties(self, cid):
       """
@@ -331,7 +377,11 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a gov.cca.TypeMap
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      instanceName = cid.getInstanceName()
+      if instanceName in self.d_instance:
+         svcs = self.d_instance[instanceName].services
+         if svcs != None:
+            return svcs.getInstanceProperties()
 
    def setComponentProperties(self, cid, properties):
       """
@@ -339,7 +389,11 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: void
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      instanceName = cid.getInstanceName()
+      if instance in self.d_instance:
+         svcs = self.d_instance[instanceName].services
+            if svcs != None :
+               svcs.setInstanceProperties(properties)
 
    def getPortProperties(self, cid, portName):
       """
@@ -347,7 +401,12 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a gov.cca.TypeMap
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      instanceName = cid.getInstanceName()
+      if instanceName in self.d_instance:
+         svcs = self.d_instance[instanceName].services
+         if svcs != None:
+            return svcs.getPortProperties(portName)
+      return None
 
    def setPortProperties(self, cid, portName, properties):
       """
@@ -355,7 +414,12 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: void
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      instanceName = cid.getInstanceName()
+      if instanceName in self.d_instance:
+         svcs = self.d_instance[instanceName].services
+         if svcs != None:
+            svcs.setPortProperties(portName, properties)
+      return
 
    def getConnectionProperties(self, connID):
       """
@@ -363,7 +427,7 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a gov.cca.TypeMap
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      return connID.getProperties()
 
    def setConnectionProperties(self, connID, properties):
       """
@@ -371,7 +435,14 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: void
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      userName = connID.getUser().getInstanceName()
+      if userName in self.d_instance :
+         userPortName = connID.getUserPortName()
+         usesConnection = self.d_instance[userName].usesConnection
+         if userPortName in usesConnection:
+            conn = usesConnection[userPortName]
+            if conn != None:
+               conn.setProperties(properties)
  
    def getComponentID(self, componentInstanceName):
       """
@@ -379,7 +450,10 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a gov.cca.ComponentID
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      if componentInstanceName in self.d_instance:
+         return self.d_instance[componentInstanceName].services.getComponentID()
+      else
+         return None
 
    def getComponentIDs(self):
       """
@@ -387,7 +461,10 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a list of gov.cca.ComponentID
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      ids = []
+      for instanceName in self.d_instance:
+         ids.append(self.d_instance[instanceName].services.getComponentID())
+      return ids
 
    def getProvidedPortNames(self, cid):
       """
@@ -395,7 +472,16 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a list of strings
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      instanceName = cid.getInstanceName()
+      if instanceName in self.d_instance:
+         svcs = self.d_instance[instanceName].services
+         if svcs != None:
+            return svcs.getProvidedPortNames()
+         else:
+            raise InstanceNotFoundException(instanceName)
+      else:
+         raise InstanceNotFoundException(instanceName)
+      return []
 
    def getUsedPortNames(self, cid):
       """
@@ -403,7 +489,17 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a list of strings
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      instanceName = cid.getInstanceName()
+      if instanceName in self.d_instance:
+         svcs = self.d_instance[instanceName].services
+         if svcs != None:
+            return svcs.getUsedPortNames()
+         else:
+            raise InstanceNotFoundException(instanceName)
+      else:
+         raise InstanceNotFoundException(instanceName)
+      return []
+
 
    def getConnectionIDs(self, componentList):
       """
@@ -411,6 +507,15 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a list of goc.cca.ConnectionID
       throws CCAException
       """
-      raise NotImplementedError("Abstract Class!")  
+      cache = []
+      for component in componentList:
+         instanceName = component.getInstanceName()
+         for portName in self.d_instance[instanceName].usesConnection:
+            cache.append(self.d_instance[instanceName].usesConnection[portName]
+         for portName in self.d_instance[instanceName].providesConnection:
+            for conn in self.d_instance[instanceName].providesConnection[portName]:
+               cache.append[conn]
+      return cache
+
 
 
