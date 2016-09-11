@@ -6,19 +6,21 @@ from framework.common.exceptions import PortNotFoundException
 
 class ServicesHandle(Services, ConnectionEventService):
    def __init__(self):
-      # Maps strings port names do gov.cca.Ports objects and gov.cca.TypeMap properties objects.
+      # Maps strings portName to a tuple (gov.cca.Ports, gov.cca.TypeMap).
       # (portName) -> (Port, TypeMap)
       self.d_usesports = {}
       self.d_providesports = {}
     
-      # Maps ports names to ports types
+      # Maps string ports names to string ports types
+      # (portName) -> (portType)
       self.d_portType = {}
 
       # Maps a gov.cca.ports.EventType to a list of gov.cca.ports.EventListener
+      # (EventType) -> (ConnectionEventListener [])
       self.d_listeners = {}
 
    # New methods
-   def initialize(self, fwk, componentID, properties):
+   def initialize(self, fwk, componentID, properties, is_alias):
       """
       input: a gov.cca.AbstractFramework fwk, a gov.cca.ComponentID componentID and a gov.cca.TypeMap properties
       ouput: void
@@ -26,6 +28,7 @@ class ServicesHandle(Services, ConnectionEventService):
       self.framework = fwk
       self.componentID = componentID
       self.properties = properties
+      self.d_is_alias = is_alias
   
    def getInstanceProperties():
       """
@@ -48,7 +51,7 @@ class ServicesHandle(Services, ConnectionEventService):
       """
       pass
 
-   def getProviderPortNames(self):
+   def getProvidedPortNames(self):
       """
       input: none
       output: a list of strings
@@ -176,6 +179,38 @@ class ServicesHandle(Services, ConnectionEventService):
       """
       input: string portName
       output: void
+      throws CCAException
+      """
+      pass
+ 
+   def registerForRelease(self, callback):
+      """
+      input: a gov.cca.ComponentRelease object callback
+      output: void
+      """
+      pass 
+
+   # Methods from gov.cca.ports.ServiceRegistry
+   def addService(self, serviceType, portProvider):
+      """
+      input: a string serviceType, a gov.cca.ports.ServiceProvider object portProvider
+      output: a boolean
+      throws CCAException
+      """
+      pass
+
+   def addSingletonService(self, serviceType, server):
+      """
+      input: a string serviceType, a gov.cca.Port object server
+      output: a boolean
+      throws CCAException
+      """
+      pass
+
+   def removeService(self, serviceType):
+      """
+      input: a string serviceType
+      output: none
       throws CCAException
       """
       pass

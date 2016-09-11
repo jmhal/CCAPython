@@ -128,6 +128,13 @@ class Services(object):
       """
       raise NotImplementedError("Abstract Class!")
 
+   def registerForRelease(self, callback):
+      """
+      input: a gov.cca.ComponentRelease object callback
+      output: void
+      """
+      raise NotImplementedError("Abstract Class!")
+
 class AbstractFramework(object):
    def __init__(self):
       raise NotImplementedError("Abstract Class!")
