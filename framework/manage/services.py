@@ -8,16 +8,19 @@ class ServicesHandle(Services, ConnectionEventService):
    def __init__(self):
       # Maps strings portName to a tuple (gov.cca.Ports, gov.cca.TypeMap).
       # (portName) -> (Port, TypeMap)
-      self.d_usesports = {}
-      self.d_providesports = {}
+      self.d_usesPort = {}
+      self.d_providesPorts = {}
     
       # Maps string ports names to string ports types
       # (portName) -> (portType)
       self.d_portType = {}
 
-      # Maps a gov.cca.ports.EventType to a list of gov.cca.ports.EventListener
+      # Maps a gov.cca.ports.EventType value to a list of gov.cca.ports.EventListener
       # (EventType) -> (ConnectionEventListener [])
       self.d_listeners = {}
+
+      # A gov.cca.Type containing the properties of the component instance
+      self.d_instanceProperties = TypeMapDict()
 
    # New methods
    def initialize(self, fwk, componentID, properties, is_alias):
@@ -35,44 +38,50 @@ class ServicesHandle(Services, ConnectionEventService):
       input: none
       output: a gov.cca.TypeMap object
       """
-      pass
+      return self.d_instanceProperties 
    
    def setInstanceProperties(self, properties):
       """
       input: a gov.cca.TypeMap properties
       output: none
       """
-      pass
+      self.d_instanceProperties = properties
+      return
 
    def setPortProperties(self, portName, properties):
       """
       input: a string portName, a gov.cca.TypeMap properties
       output: none
       """
-      pass
+      if portName in self.d_providesPort:
+         self.d_providesPort[portName][1] = properties
+      else if portName in self.d_usesPort:
+         self.d_usesPort[portName][1] = properties
+      else:
+         raise PortNotFoundException(portName)
 
    def getProvidedPortNames(self):
       """
       input: none
       output: a list of strings
       """
+      return self.d_providesPort.keys()
       
-
    def getUsedPortNames(self):
       """
       input: none
       output: a list of strings
       """
-      pass
+      return self.d_usesPort.keys()
 
    def bindPort(self, portName, port):
       """
       input: a string portName, a gov.cca.Port object
       output: void
       """
-      if portName not in d_usesports.keys():
+      if portName not in self.d_usesPort.keys():
          raise PortNotFoundException(portName)
-      d_usesports[portName] = (port, TypeMapDict())
+      self.d_usesPort[portName] = (port, TypeMapDict())
       return
 
    def getProvidesPort(self, name):
@@ -80,20 +89,20 @@ class ServicesHandle(Services, ConnectionEventService):
       input: string name
       output: void
       """
-      if name not in self.d_providesports.keys():
+      if name not in self.d_providesPorts.keys():
          raise PortNotFoundException(name) 
-      return d_providesports[name][TypeMapDict()]
+      return self.d_providesPorts[name][0]
          
    def notifyConnectionEvent(self, portName, event):
       """
       This method will notify the component from the calling Services of an event
-      input: string portName, a gov.cca.ports.EventType event)
+      input: string portName, a gov.cca.ports.EventType value event
       output: void
       """
       listenerList = [] 
-      for ev in d_listeners.keys():
+      for ev in self.d_listeners:
          if ev == event:
-            listenerList += d_listeners[event]
+            listenerList += self.d_listeners[event]
        
       tm = TypeMapDict()
       tm.putString("cca.PortName", portName)
@@ -102,7 +111,6 @@ class ServicesHandle(Services, ConnectionEventService):
       for listener in listenerList:
          listener.connectionActivity(ce)
       return
-
 
    # Methods from gov.cca.Services
    def getComponentID(self):
@@ -118,7 +126,7 @@ class ServicesHandle(Services, ConnectionEventService):
       output: a TypeMap object
       throws CCAException
       """
-      pass
+      return TypeMapDict() 
 
    def registerUsesPort(self, portName, type, properties):
       """
@@ -165,7 +173,8 @@ class ServicesHandle(Services, ConnectionEventService):
       output: a Port object
       throws CCAException
       """
-      pass
+      if portName in self.d_usesPort:
+         return self.d_usesPort[portName][0]
 
    def getPortNonblocking(self, portName):
       """
@@ -173,7 +182,7 @@ class ServicesHandle(Services, ConnectionEventService):
       output: a Port object
       throws CCAException
       """
-      pass
+      return self.getPort(portName)
 
    def releasePort(self, portName):
       """
@@ -181,7 +190,8 @@ class ServicesHandle(Services, ConnectionEventService):
       output: void
       throws CCAException
       """
-      pass
+      if portName in self.d_usesPort:
+         self.d_usesPort[portName] = None
  
    def registerForRelease(self, callback):
       """
