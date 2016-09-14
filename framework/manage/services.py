@@ -1,13 +1,14 @@
 from gov.cca import Services
 from gov.cca.ports import ConnectionEventService
+from gov.cca.ports import EventType
 from framework.info.connectioninfo import ConnectionEvent
 from framework.common.typemap import TypeMapDict
 from framework.common.exceptions import PortNotFoundException
 
 class ServicesHandle(Services, ConnectionEventService):
    def __init__(self):
-      # Maps strings portName to a tuple (gov.cca.Ports, gov.cca.TypeMap).
-      # (portName) -> (Port, TypeMap)
+      # Maps strings portName to a list (gov.cca.Ports, gov.cca.TypeMap).
+      # (portName) -> [Port, TypeMap]
       self.d_usesPort = {}
       self.d_providesPorts = {}
     
@@ -81,7 +82,7 @@ class ServicesHandle(Services, ConnectionEventService):
       """
       if portName not in self.d_usesPort.keys():
          raise PortNotFoundException(portName)
-      self.d_usesPort[portName] = (port, TypeMapDict())
+      self.d_usesPort[portName] = [port, TypeMapDict()]
       return
 
    def getProvidesPort(self, name):
@@ -118,7 +119,7 @@ class ServicesHandle(Services, ConnectionEventService):
       input: none
       output: a ComponentID object
       """
-      pass
+      return self.componentID 
 
    def createTypeMap(self):
       """
@@ -128,29 +129,47 @@ class ServicesHandle(Services, ConnectionEventService):
       """
       return TypeMapDict() 
 
-   def registerUsesPort(self, portName, type, properties):
+   def registerUsesPort(self, portName, _type, properties):
       """
       input: string portName, string type, and TypeMap properties
       output: void
       throws CCAException
       """
-      pass
-  
+      if portName in self.d_providesPort or portName in self.d_usesPort:
+         print portName + " is not unique. Not doing anything."
+         return 
+      else:
+         self.d_usesPort[portName] = [None, properties]
+         self.d_portType[portName] = _type
+         if self.framework != None:
+            if self.framework.isProvidedServiceType(_type):
+               self.framework.provideRequestedServices(self.d_componentID, portName, _type) 
+ 
    def unregisterUsesPort(self, portName):
       """
       input: string portName
       output: void
       throws CCAException
       """
-      pass
- 
-   def addProvidesPort(self, inPort, portName, type, properties):
+      self.d_usesPort.pop(portName, None)
+      self.d_portType.pop(portName, None)
+      return 
+
+   def addProvidesPort(self, inPort, portName, _type, properties):
       """
       input: Port inPort, string portName, string type, and TypeMap properties
       output: void
       throws CCAException
       """
-      pass
+      if portName in self.d_providesPort or portName in self.d_usesPort:
+         print portName + " is not unique. Not doing anything."
+         return 
+      if not self.d_is_alias and not inPort.isType(_type):
+         print "Port instance is not an instance of specified type"
+         return
+      self.d_providesPort[portName] = [inPort, properties]
+      self.d_portType[portName] = _type
+      return
   
    def removeProvidesPort(self, portName):
       """
@@ -158,14 +177,21 @@ class ServicesHandle(Services, ConnectionEventService):
       output: void
       throws CCAException
       """
-      pass
+      self.d_providesPort.pop(portName, None)
+      self.d_portType.pop(portName, None)
+      return 
 
    def getPortProperties(self, portName):  
       """
       input: string portName
       output: a TypeMap object 
       """
-      pass
+      if portName in self.d_usesPort:
+         return self.d_usesPort[portName][1]
+      else if portName in self.d_providesPort:
+         return self.d_providesPort[portName][1]
+      else
+         return None
 
    def getPort(self, portName):
       """
@@ -198,7 +224,7 @@ class ServicesHandle(Services, ConnectionEventService):
       input: a gov.cca.ComponentRelease object callback
       output: void
       """
-      pass 
+      self.framework.setInstanceRelease(self.componentID, callback)
 
    # Methods from gov.cca.ports.ServiceRegistry
    def addService(self, serviceType, portProvider):
@@ -207,7 +233,8 @@ class ServicesHandle(Services, ConnectionEventService):
       output: a boolean
       throws CCAException
       """
-      pass
+      self.framework.addServiceProvider(serviceType, self.componentID, portProvider)
+      return True
 
    def addSingletonService(self, serviceType, server):
       """
@@ -231,13 +258,31 @@ class ServicesHandle(Services, ConnectionEventService):
       input: a gov.cca.ports.EventType et, a gov.cca.ports.ConnectionEventListener cel
       output: void
       """
-      pass  
- 
+      if et == EventType.Error:
+         return 
+      if et == EventType.ALL:
+         self.addConnectionEventListener(EventType.ConnectPending)
+         self.addConnectionEventListener(EventType.Connected)
+         self.addConnectionEventListener(EventType.DisconnectPending)
+         self.addConnectionEventListener(EventType.Disconnected)
+      else if cel not in self.d_listeners[et]:
+         self.d_listeners[et].append(cel) 
+         return
+
    def removeConnectionEventListener(self, et, cel):
       """
       input: a gov.cca.ports.EventType et, a gov.cca.ports.ConnectionEventListener cel
       output: void
       """
-      pass
+      if et == EventType.Error:
+         return 
+      if et == EventType.ALL:
+         for event in self.d_listeners:
+             self.removeConnectionEventListener(event, cel)
+         return
+      else:
+         self.d_listeners[et].remove(cel) 
+         return
 
+      
 
