@@ -55,8 +55,8 @@ class ServicesHandle(Services, ConnectionEventService):
       output: none
       """
       if portName in self.d_providesPort:
-         self.d_providesPort[portName][1] = properties
-      else if portName in self.d_usesPort:
+         elf.d_providesPort[portName][1] = properties
+      elif portName in self.d_usesPort:
          self.d_usesPort[portName][1] = properties
       else:
          raise PortNotFoundException(portName)
@@ -188,9 +188,9 @@ class ServicesHandle(Services, ConnectionEventService):
       """
       if portName in self.d_usesPort:
          return self.d_usesPort[portName][1]
-      else if portName in self.d_providesPort:
+      elif portName in self.d_providesPort:
          return self.d_providesPort[portName][1]
-      else
+      else :
          return None
 
    def getPort(self, portName):
@@ -242,7 +242,8 @@ class ServicesHandle(Services, ConnectionEventService):
       output: a boolean
       throws CCAException
       """
-      pass
+      self.framework.addServicePort(serviceType, server)
+      return true
 
    def removeService(self, serviceType):
       """
@@ -250,7 +251,8 @@ class ServicesHandle(Services, ConnectionEventService):
       output: none
       throws CCAException
       """
-      pass
+      self.framework.removeFromRegistry(serviceType)
+      return None
 
    # Methods from gov.cca.ports.ConnectionEventService
    def addConnectionEventListener(self, et, cel):
@@ -265,7 +267,7 @@ class ServicesHandle(Services, ConnectionEventService):
          self.addConnectionEventListener(EventType.Connected)
          self.addConnectionEventListener(EventType.DisconnectPending)
          self.addConnectionEventListener(EventType.Disconnected)
-      else if cel not in self.d_listeners[et]:
+      elif cel not in self.d_listeners[et]:
          self.d_listeners[et].append(cel) 
          return
 

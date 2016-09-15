@@ -3,6 +3,7 @@ import gov.cca.ports
 
 class ConnectionID(gov.cca.ConnectionID):
    def __init__(self):
+      return
    
    # New Methods
    def initialize(self, provider, providerPortName, user, userPortName, properties):
@@ -37,12 +38,13 @@ class ConnectionID(gov.cca.ConnectionID):
       input: a ConnectionID cid
       ouput: boll
       """
-      if self.provider.getInstanceName() == cid.provider.getInstanceName():
-         if self.user.getInstanceName() == cid.user.getInstanceName():
+      if self.provider.getInstanceName() == cid.provider.getInstanceName() :
+         if self.user.getInstanceName() == cid.user.getInstanceName() :
             if self.providerPortName == cid.providerPortName :
-               if self.userPortName == cid.userPortName:
+               if self.userPortName == cid.userPortName :
                   return True
-      else return False
+      else :
+         return False
 
    # Methods from gov.cca.ConnectionID
    def getProvider(self):

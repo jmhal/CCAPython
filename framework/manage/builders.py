@@ -56,7 +56,7 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: a gov.cca.Port object
       """
       instanceName = componentID.getInstanceName() 
-      if instanceName not it self.d_instance.keys():
+      if instanceName not in self.d_instance.keys():
          raise InstanceNotFound(instanceName)
       return self.d_instance[instanceName].services.getProvidesPort(portName)
 
@@ -71,7 +71,7 @@ class FrameworkHandle(AbstractFramework, BuilderService):
          return True
       return False
 
-   def provideRequestedServices(self, componentID, portName, portType)
+   def provideRequestedServices(self, componentID, portName, portType):
       """
       Provides access to two ports implemented by the framework itself: BuilderService and ConnectionEventService
       input: a gov.cca.ComponentID object, a string portName, a string portType
@@ -83,19 +83,19 @@ class FrameworkHandle(AbstractFramework, BuilderService):
          svcs = getServices(uniqueName, portType, 0)
          svcs.addProvidesPort(userSvcs, "ConnectionEventService", portType, 0)
          connect(componentID, portName, svcs.getComponentID(), "ConnectionEventService")
-      else if portType == "gov.cca.ports.ServiceRegistry" :
+      elif portType == "gov.cca.ports.ServiceRegistry" :
          userSvcs = self.d_instance[componentID.getInstanceName()].services
          uniqueName = getUniqueName("registryService")
          svcs = getServices(uniqueName, portType, 0)
          svcs.addProvidesPort(userSvcs, "RegistryService", portType, 0)
          connect(componentID, portName, svcs.getComponentID(), "RegistryService")
-      else if portType in self.d_servicePorts.keys() :
+      elif portType in self.d_servicePorts.keys() :
          port = self.d_servicePorts[portType]
          uniqueName = getUniqueName("singletonPort")
          svcs = getServices(uniqueName, portType, 0)
          svcs.addProvidesPort(port, "AvailService", portType, 0)
          connect(componentID, portName, svcs.getComponentID(), "AvailService")
-      else if portType in self.d_serviceProviders.keys() :
+      elif portType in self.d_serviceProviders.keys() :
          pe = d_servicesProviders[portType]
          sp = pe.serviceProvider
          portName = sp.createService(portType) 
@@ -124,9 +124,9 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       input: a string portType
       output: none
       """
-      if portType != "gov.cca.ports.BuilderService":
+      if portType != "gov.cca.ports.BuilderService" :
          self.d_servicePorts.pop(portType, None)
-         self.d_serviceProviders.pop(portType, None
+         self.d_serviceProviders.pop(portType, None)
       return 
 
    def setInstanceRelease(self, componentID, callback):   
@@ -298,7 +298,7 @@ class FrameworkHandle(AbstractFramework, BuilderService):
 
          provSvc.notifyConnectionEvent(providingPortName, EventType.Connected)
          usesSvc.notifyConnectionEvent(usingPortName, EventType.Connected)
-    return connectionID
+      return connectionID
 
    def disconnect(self, connID, timeout):
       """
@@ -392,8 +392,8 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       instanceName = cid.getInstanceName()
       if instance in self.d_instance:
          svcs = self.d_instance[instanceName].services
-            if svcs != None :
-               svcs.setInstanceProperties(properties)
+         if svcs != None :
+            svcs.setInstanceProperties(properties)
 
    def getPortProperties(self, cid, portName):
       """
@@ -452,7 +452,7 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       """
       if componentInstanceName in self.d_instance:
          return self.d_instance[componentInstanceName].services.getComponentID()
-      else
+      else :
          return None
 
    def getComponentIDs(self):
@@ -510,12 +510,10 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       cache = []
       for component in componentList:
          instanceName = component.getInstanceName()
-         for portName in self.d_instance[instanceName].usesConnection:
-            cache.append(self.d_instance[instanceName].usesConnection[portName]
-         for portName in self.d_instance[instanceName].providesConnection:
-            for conn in self.d_instance[instanceName].providesConnection[portName]:
-               cache.append[conn]
+         for portName in self.d_instance[instanceName].usesConnection :
+            cache.append(self.d_instance[instanceName].usesConnection[portName])
+         for portName in self.d_instance[instanceName].providesConnection :
+            for conn in self.d_instance[instanceName].providesConnection[portName] :
+               cache.append(conn)
       return cache
-
-
 

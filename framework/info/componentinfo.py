@@ -26,4 +26,4 @@ class ComponentRepository(gov.cca.ports.ComponentRepository):
       self.repository = {}
 
    def getAvailableComponentClasses(self):
-      result self.repository
+      return self.repository
