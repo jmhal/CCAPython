@@ -13,9 +13,9 @@ class ConnectionID(gov.cca.ConnectionID):
       throws CCAException
       """
       self.provider = provider
-      self.providerPortName = providerPortname
+      self.providerPortName = providerPortName
       self.user = user
-      self.userPortname = userPortName
+      self.userPortName = userPortName
       self.properties = properties
 
    def setProperties(self, properties):
@@ -62,7 +62,7 @@ class ConnectionID(gov.cca.ConnectionID):
 class ConnectionEvent(gov.cca.ports.ConnectionEvent):
    def __init__(self, eventType, portInfo):      
       self.eventType = eventType
-      seff.portInfo = portInfo
+      self.portInfo = portInfo
 
    def initialize(self, eventType, portProperties):
       self.eventType = eventType

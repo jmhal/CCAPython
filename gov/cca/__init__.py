@@ -4,6 +4,15 @@ class Port(object):
    def __init__(self):
       raise NotImplementedError("Abstract Class!")  
 
+   def __init__(self, portType):
+      self.portType = portType
+      return 
+   
+   def isType(self, _type):
+      if _type == self.portType:
+         return True
+      return False
+
 class Component(object):
    def __init__(self):
       raise NotImplementedError("Abstract Class!")

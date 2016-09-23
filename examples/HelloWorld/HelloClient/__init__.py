@@ -1,16 +1,16 @@
-import gov.cca.Component
-import gov.cca.ports.GoPort
+import gov.cca
+import gov.cca.ports
 
 class HelloClientGoPort(gov.cca.ports.GoPort):
    def __init__(self, component):
       self.component = component
+      super(HelloClientGoPort, self).__init__()
       return
 
    def go(self):
-      port = component.services.getPort("HelloServer")
-      # replace for the method in the server port
+      port = self.component.services.getPort("HelloServer")
       port.sayHello()
-      component.services.releasePort("HelloServer")
+      self.component.services.releasePort("HelloServer")
       return
 
 class Component(gov.cca.Component):
@@ -20,7 +20,7 @@ class Component(gov.cca.Component):
 
    def setServices(self, services):
       self.services = services
-      services.registerUsesPort("HelloServer", "HelloServer.HelloPort", None)
+      services.registerUsesPort("HelloServer", "examples.HelloWorld.HelloServer.StringProducerPort", None)
       services.addProvidesPort(self.goPort, "GoPort", "gov.cca.ports.GoPort", None)
       return
 

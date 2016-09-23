@@ -41,7 +41,7 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       self.d_serviceProviders = {}
 
       # (string portType) -> (gov.cca.Port)
-      self.d_servicePorts = []
+      self.d_servicePorts = {} 
 
       # Maps instance names to class names
       # (instanceName) -> (className)   
@@ -79,19 +79,19 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       """
       if portType == "gov.cca.ports.ConnectionEventService" : 
          userSvcs = self.d_instance[componentID.getInstanceName()].services
-         uniqueName = getUniqueName("connectionEventer")
+         uniqueName = self.getUniqueName("connectionEventer")
          svcs = getServices(uniqueName, portType, 0)
          svcs.addProvidesPort(userSvcs, "ConnectionEventService", portType, 0)
          connect(componentID, portName, svcs.getComponentID(), "ConnectionEventService")
       elif portType == "gov.cca.ports.ServiceRegistry" :
          userSvcs = self.d_instance[componentID.getInstanceName()].services
-         uniqueName = getUniqueName("registryService")
+         uniqueName = self.getUniqueName("registryService")
          svcs = getServices(uniqueName, portType, 0)
          svcs.addProvidesPort(userSvcs, "RegistryService", portType, 0)
          connect(componentID, portName, svcs.getComponentID(), "RegistryService")
       elif portType in self.d_servicePorts.keys() :
          port = self.d_servicePorts[portType]
-         uniqueName = getUniqueName("singletonPort")
+         uniqueName = self.getUniqueName("singletonPort")
          svcs = getServices(uniqueName, portType, 0)
          svcs.addProvidesPort(port, "AvailService", portType, 0)
          connect(componentID, portName, svcs.getComponentID(), "AvailService")
@@ -156,16 +156,20 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       connectionIDs = []
 
       # Collect all connection IDs
-      for connection in self.d_instance[instanceName].usesConnection:
-         connectionIDs.append(self.d_instance[instanceName].usesConnection[connection])
+      for portName in self.d_instance[instanceName].usesConnection:
+         connectionIDs.append(self.d_instance[instanceName].usesConnection[portName])
+
+      if len(connectionIDs) == 0 :
+         print instanceName + " does not have using ports. Removing..."
 
       # Destroy all connections
       for id_ in connectionIDs:
-         disconnect(id_, 0.0)
+         self.disconnect(id_, 0.0)
        
       # Remove the instance itself
       instance = self.d_instance[instanceName]
-      instance.release.releaseServices(instance.services)
+      if instance.release != None :
+         instance.release.releaseServices(instance.services)
       self.d_instance.pop(instanceName, None)
    
       return 1
@@ -195,7 +199,7 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       """
       nil = None
       cid = ComponentID(None)
-      uniqueName = getUniqueName(selfInstanceName)
+      uniqueName = self.getUniqueName(selfInstanceName)
       cid.initialize(uniqueName)
       svcs = ServicesHandle()
       svcs.initialize(self, cid, selfProperties, True) 
@@ -252,13 +256,15 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       class_ =  getattr(importlib.import_module(moduleName), className_)
       component = class_() 
 
-      uniqueName = getUniqueName(instanceName)
+      uniqueName = self.getUniqueName(instanceName)
       cid = ComponentID(None)
-      cid.initiliaze(uniqueName)
+      cid.initialize(uniqueName)
       services = ServicesHandle()
       services.initialize(self, cid, properties, False)
-      self.d_instance[uniqueName].component = component
-      self.d_instance[uniqueName].services = services
+      componentInstance = ComponentInstance(component, None, services)
+      self.d_instance[uniqueName] = componentInstance
+      #self.d_instance[uniqueName].component = component
+      #self.d_instance[uniqueName].services = services
       component.setServices(services)
 
       return cid
@@ -281,23 +287,26 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       connectionID = ConnectionID()
       userName = user.getInstanceName()
       provName = provider.getInstanceName()
-      if (userName in d_instance.keys()) and (provName in d_instance.keys()) :
-         userSvc = d_instance[userName].services
-         provSvc = d_instance[provName].services
+      if (userName in self.d_instance.keys()) and (provName in self.d_instance.keys()) :
+         userSvc = self.d_instance[userName].services
+         provSvc = self.d_instance[provName].services
 
-         provSvc.notifyConnectionEvent(provindingPortName, EventType.ConnectPending)
+         provSvc.notifyConnectionEvent(providingPortName, EventType.ConnectPending)
          userSvc.notifyConnectionEvent(usingPortName, EventType.ConnectPending)
 
          port = provSvc.getProvidesPort(providingPortName)   
-         
-         userSvc.bindPort(usingPortName, Port)
-         connectID.initialize(provider, providingPortName, user, usingPortName, None)
 
-         d_instance[userName].usesConnection[usingPortName] = connectID
-         d_instance[provName].providesConnection[provindingPortName].add(connectID)
+         userSvc.bindPort(usingPortName, port)
+         connectionID.initialize(provider, providingPortName, user, usingPortName, None)
+
+         self.d_instance[userName].usesConnection[usingPortName] = connectionID
+
+         if providingPortName not in self.d_instance[provName].providesConnection :
+            self.d_instance[provName].providesConnection[providingPortName] = set() 
+         self.d_instance[provName].providesConnection[providingPortName].add(connectionID)
 
          provSvc.notifyConnectionEvent(providingPortName, EventType.Connected)
-         usesSvc.notifyConnectionEvent(usingPortName, EventType.Connected)
+         userSvc.notifyConnectionEvent(usingPortName, EventType.Connected)
       return connectionID
 
    def disconnect(self, connID, timeout):
@@ -321,11 +330,11 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       if userName in self.d_instance :
          userSvcs = self.d_instance[userName].services
       else:
-         print "Unable to find instance: " + userName
+         print "Unable to find instance: " + userName + "; Already removed?"
       if provName in self.d_instance:
          provSvcs = self.d_instance[provName].services
       else:
-         print "Unable to find instance: " + provName
+         print "Unable to find instance: " + provName + "; Already removed?"
 
       if provSvcs != None and userSvcs != None :
          userSvcs.notifyConnectionEvent(userPortName, EventType.DisconnectPending)
@@ -340,9 +349,7 @@ class FrameworkHandle(AbstractFramework, BuilderService):
          
          userSvcs.notifyConnectionEvent(userPortName, EventType.Disconnected)
          provSvcs.notifyConnectionEvent(provPortName, EventType.Disconnected)
-      
       return   
-
 
    def disconnectAll(self, id1, id2, timeout):
       """
@@ -368,8 +375,8 @@ class FrameworkHandle(AbstractFramework, BuilderService):
       output: void
       throws CCAException
       """
-      removeInstance(toDie.getInstanceName())
-      return
+      return self.removeInstance(toDie.getInstanceName())
+      
 
    def getComponentProperties(self, cid):
       """

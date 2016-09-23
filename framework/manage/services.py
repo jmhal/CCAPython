@@ -54,8 +54,8 @@ class ServicesHandle(Services, ConnectionEventService):
       input: a string portName, a gov.cca.TypeMap properties
       output: none
       """
-      if portName in self.d_providesPort:
-         elf.d_providesPort[portName][1] = properties
+      if portName in self.d_providesPorts:
+         elf.d_providesPorts[portName][1] = properties
       elif portName in self.d_usesPort:
          self.d_usesPort[portName][1] = properties
       else:
@@ -66,7 +66,7 @@ class ServicesHandle(Services, ConnectionEventService):
       input: none
       output: a list of strings
       """
-      return self.d_providesPort.keys()
+      return self.d_providesPorts.keys()
       
    def getUsedPortNames(self):
       """
@@ -107,7 +107,7 @@ class ServicesHandle(Services, ConnectionEventService):
        
       tm = TypeMapDict()
       tm.putString("cca.PortName", portName)
-      tm.putString("cca.PortType", d_portType[portName])
+          tm.putString("cca.PortType", self.d_portType[portName])
       ce = ConnectionEvent(event, tm) 
       for listener in listenerList:
          listener.connectionActivity(ce)
@@ -135,14 +135,14 @@ class ServicesHandle(Services, ConnectionEventService):
       output: void
       throws CCAException
       """
-      if portName in self.d_providesPort or portName in self.d_usesPort:
+      if portName in self.d_providesPorts or portName in self.d_usesPort:
          print portName + " is not unique. Not doing anything."
          return 
       else:
          self.d_usesPort[portName] = [None, properties]
          self.d_portType[portName] = _type
          if self.framework != None:
-            if self.framework.isProvidedServiceType(_type):
+            if self.framework.isProvidedService(_type):
                self.framework.provideRequestedServices(self.d_componentID, portName, _type) 
  
    def unregisterUsesPort(self, portName):
@@ -161,13 +161,13 @@ class ServicesHandle(Services, ConnectionEventService):
       output: void
       throws CCAException
       """
-      if portName in self.d_providesPort or portName in self.d_usesPort:
+      if portName in self.d_providesPorts or portName in self.d_usesPort:
          print portName + " is not unique. Not doing anything."
          return 
       if not self.d_is_alias and not inPort.isType(_type):
          print "Port instance is not an instance of specified type"
          return
-      self.d_providesPort[portName] = [inPort, properties]
+      self.d_providesPorts[portName] = [inPort, properties]
       self.d_portType[portName] = _type
       return
   
@@ -177,7 +177,7 @@ class ServicesHandle(Services, ConnectionEventService):
       output: void
       throws CCAException
       """
-      self.d_providesPort.pop(portName, None)
+      self.d_providesPorts.pop(portName, None)
       self.d_portType.pop(portName, None)
       return 
 
@@ -188,8 +188,8 @@ class ServicesHandle(Services, ConnectionEventService):
       """
       if portName in self.d_usesPort:
          return self.d_usesPort[portName][1]
-      elif portName in self.d_providesPort:
-         return self.d_providesPort[portName][1]
+      elif portName in self.d_providesPorts:
+         return self.d_providesPorts[portName][1]
       else :
          return None
 

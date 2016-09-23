@@ -2,7 +2,8 @@ from gov.cca import Port
 
 class GoPort(Port):
    def __init__(self):
-      raise NotImplementedError("Abstract Class!")  
+      super(GoPort, self).__init__("gov.cca.ports.GoPort")
+      return
    
    def go(self):
       """
