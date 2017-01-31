@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 from framework.manage.builders import FrameworkHandle
-#from gov.cca.ports import GoPort
 
 if __name__ == '__main__':
   fwk = FrameworkHandle()
@@ -10,7 +9,6 @@ if __name__ == '__main__':
   client = fwk.createInstance("HelloClientInstance", "examples.HelloWorld.HelloClient.Component", None)
  
   fwk.connect(client, "HelloServer", server, "HelloServer")
-
   
   goport = fwk.lookupPort(client, "GoPort")
   goport.go()
