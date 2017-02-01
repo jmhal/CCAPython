@@ -107,7 +107,7 @@ class ServicesHandle(Services, ConnectionEventService):
        
       tm = TypeMapDict()
       tm.putString("cca.PortName", portName)
-          tm.putString("cca.PortType", self.d_portType[portName])
+      tm.putString("cca.PortType", self.d_portType[portName])
       ce = ConnectionEvent(event, tm) 
       for listener in listenerList:
          listener.connectionActivity(ce)
