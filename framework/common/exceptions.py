@@ -1,5 +1,5 @@
-from gov.cca import CCAException
-from gov.cca import CCAExceptionType
+from CCAPython.gov.cca import CCAException
+from CCAPython.gov.cca import CCAExceptionType
 
 class TypeMismatchException(CCAException):
    def __init__(self, exceptionType):

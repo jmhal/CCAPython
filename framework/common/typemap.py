@@ -1,5 +1,5 @@
-from gov.cca import TypeMap
-from gov.cca import Type
+from CCAPython.gov.cca import TypeMap
+from CCAPython.gov.cca import Type
 
 class TypeMapDict(TypeMap):
    def __init__(self):

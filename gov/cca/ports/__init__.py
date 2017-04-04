@@ -1,4 +1,4 @@
-from gov.cca import Port
+from CCAPython.gov.cca import Port
 
 class GoPort(Port):
    def __init__(self):
