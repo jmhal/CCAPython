@@ -1,5 +1,4 @@
 import gov.cca
-import gov.cca
 
 class StringProducerPort(gov.cca.Port):
    def sayHello(self):
