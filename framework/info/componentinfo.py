@@ -1,7 +1,7 @@
-import gov.cca
-import gov.cca.ports
+import CCAPython.gov.cca
+import CCAPython.gov.cca.ports
 
-class ComponentID(gov.cca.ComponentID):
+class ComponentID(CCAPython.gov.cca.ComponentID):
    def __init__(self, name):
       self.name = name
   
@@ -14,14 +14,14 @@ class ComponentID(gov.cca.ComponentID):
    def getSerialization(self):
       return self.name 
 
-class ComponentClassDescription(gov.cca.ComponentClassDescription):
+class ComponentClassDescription(CCAPython.gov.cca.ComponentClassDescription):
    def __init__(self, dscp):
       self.description = dscp
 
    def getComponentClassName(self):
       return self.description
 
-class ComponentRepository(gov.cca.ports.ComponentRepository):
+class ComponentRepository(CCAPython.gov.cca.ports.ComponentRepository):
    def __init__(self):
       self.repository = {}
 

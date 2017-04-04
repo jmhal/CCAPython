@@ -1,15 +1,15 @@
 import uuid
 import importlib
 
-from gov.cca import AbstractFramework
-from gov.cca import Port
-from gov.cca.ports import BuilderService
-from gov.cca.ports import EventType
-from framework.info.connectioninfo import ConnectionID
-from framework.info.componentinfo import ComponentID
-from framework.common.exceptions import InstanceNotFoundException
-from framework.manage.services import ServicesHandle
-from framework.common.typemap import TypeMapDict
+from CCAPython.gov.cca import AbstractFramework
+from CCAPython.gov.cca import Port
+from CCAPython.gov.cca.ports import BuilderService
+from CCAPython.gov.cca.ports import EventType
+from CCAPython.framework.info.connectioninfo import ConnectionID
+from CCAPython.framework.info.componentinfo import ComponentID
+from CCAPython.framework.common.exceptions import InstanceNotFoundException
+from CCAPython.framework.manage.services import ServicesHandle
+from CCAPython.framework.common.typemap import TypeMapDict
 
 class ProviderEntry():
    def __init__(self, componentID, serviceProvider):
@@ -167,6 +167,11 @@ class FrameworkHandle(AbstractFramework, BuilderService):
          self.disconnect(id_, 0.0)
        
       # Remove the instance itself
+
+      # If there were no connection lefts, the instance is already gone.
+      if instanceName not in self.d_instance.keys():
+         return 0
+
       instance = self.d_instance[instanceName]
       if instance.release != None :
          instance.release.releaseServices(instance.services)

@@ -1,15 +1,15 @@
-import gov.cca
-import gov.cca.ports
+import CCAPython.gov.cca
+import CCAPython.gov.cca.ports
 
-class ConnectionID(gov.cca.ConnectionID):
+class ConnectionID(CCAPython.gov.cca.ConnectionID):
    def __init__(self):
       return
    
    # New Methods
    def initialize(self, provider, providerPortName, user, userPortName, properties):
       """
-      input: a gov.cca.ComponentID object provider, a string providerPortName, a gov.cca.ComponentID object user, a string userPortName
-      output: a gov.cca.ConnectionID object
+      input: a CCAPython.gov.cca.ComponentID object provider, a string providerPortName, a CCAPython.gov.cca.ComponentID object user, a string userPortName
+      output: a CCAPython.gov.cca.ConnectionID object
       throws CCAException
       """
       self.provider = provider
@@ -20,7 +20,7 @@ class ConnectionID(gov.cca.ConnectionID):
 
    def setProperties(self, properties):
       """
-      input: a gov.cca.TypeMap object properties
+      input: a CCAPython.gov.cca.TypeMap object properties
       output: none
       """
       self.properties = properties
@@ -28,7 +28,7 @@ class ConnectionID(gov.cca.ConnectionID):
    def getProperties(self):
       """
       input: none
-      output: a gov.cca.TypeMap object
+      output: a CCAPython.gov.cca.TypeMap object
       """
       return properties
 
@@ -46,7 +46,7 @@ class ConnectionID(gov.cca.ConnectionID):
       else :
          return False
 
-   # Methods from gov.cca.ConnectionID
+   # Methods from CCAPython.gov.cca.ConnectionID
    def getProvider(self):
       return self.provider
 
@@ -59,7 +59,7 @@ class ConnectionID(gov.cca.ConnectionID):
    def getUserPortName(self):
       return self.userPortName
 
-class ConnectionEvent(gov.cca.ports.ConnectionEvent):
+class ConnectionEvent(CCAPython.gov.cca.ports.ConnectionEvent):
    def __init__(self, eventType, portInfo):      
       self.eventType = eventType
       self.portInfo = portInfo

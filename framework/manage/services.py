@@ -1,13 +1,13 @@
-from gov.cca import Services
-from gov.cca.ports import ConnectionEventService
-from gov.cca.ports import EventType
-from framework.info.connectioninfo import ConnectionEvent
-from framework.common.typemap import TypeMapDict
-from framework.common.exceptions import PortNotFoundException
+from CCAPython.gov.cca import Services
+from CCAPython.gov.cca.ports import ConnectionEventService
+from CCAPython.gov.cca.ports import EventType
+from CCAPython.framework.info.connectioninfo import ConnectionEvent
+from CCAPython.framework.common.typemap import TypeMapDict
+from CCAPython.framework.common.exceptions import PortNotFoundException
 
 class ServicesHandle(Services, ConnectionEventService):
    def __init__(self):
-      # Maps strings portName to a list (gov.cca.Ports, gov.cca.TypeMap).
+      # Maps strings portName to a list (CCAPython.gov.cca.Ports, CCAPython.gov.cca.TypeMap).
       # (portName) -> [Port, TypeMap]
       self.d_usesPort = {}
       self.d_providesPorts = {}
@@ -16,17 +16,17 @@ class ServicesHandle(Services, ConnectionEventService):
       # (portName) -> (portType)
       self.d_portType = {}
 
-      # Maps a gov.cca.ports.EventType value to a list of gov.cca.ports.EventListener
+      # Maps a CCAPython.gov.cca.ports.EventType value to a list of CCAPython.gov.cca.ports.EventListener
       # (EventType) -> (ConnectionEventListener [])
       self.d_listeners = {}
 
-      # A gov.cca.Type containing the properties of the component instance
+      # A CCAPython.gov.cca.Type containing the properties of the component instance
       self.d_instanceProperties = TypeMapDict()
 
    # New methods
    def initialize(self, fwk, componentID, properties, is_alias):
       """
-      input: a gov.cca.AbstractFramework fwk, a gov.cca.ComponentID componentID and a gov.cca.TypeMap properties
+      input: a CCAPython.gov.cca.AbstractFramework fwk, a CCAPython.gov.cca.ComponentID componentID and a CCAPython.gov.cca.TypeMap properties
       ouput: void
       """
       self.framework = fwk
@@ -37,13 +37,13 @@ class ServicesHandle(Services, ConnectionEventService):
    def getInstanceProperties():
       """
       input: none
-      output: a gov.cca.TypeMap object
+      output: a CCAPython.gov.cca.TypeMap object
       """
       return self.d_instanceProperties 
    
    def setInstanceProperties(self, properties):
       """
-      input: a gov.cca.TypeMap properties
+      input: a CCAPython.gov.cca.TypeMap properties
       output: none
       """
       self.d_instanceProperties = properties
@@ -51,7 +51,7 @@ class ServicesHandle(Services, ConnectionEventService):
 
    def setPortProperties(self, portName, properties):
       """
-      input: a string portName, a gov.cca.TypeMap properties
+      input: a string portName, a CCAPython.gov.cca.TypeMap properties
       output: none
       """
       if portName in self.d_providesPorts:
@@ -77,7 +77,7 @@ class ServicesHandle(Services, ConnectionEventService):
 
    def bindPort(self, portName, port):
       """
-      input: a string portName, a gov.cca.Port object
+      input: a string portName, a CCAPython.gov.cca.Port object
       output: void
       """
       if portName not in self.d_usesPort.keys():
@@ -97,7 +97,7 @@ class ServicesHandle(Services, ConnectionEventService):
    def notifyConnectionEvent(self, portName, event):
       """
       This method will notify the component from the calling Services of an event
-      input: string portName, a gov.cca.ports.EventType value event
+      input: string portName, a CCAPython.gov.cca.ports.EventType value event
       output: void
       """
       listenerList = [] 
@@ -107,13 +107,13 @@ class ServicesHandle(Services, ConnectionEventService):
        
       tm = TypeMapDict()
       tm.putString("cca.PortName", portName)
-          tm.putString("cca.PortType", self.d_portType[portName])
+      tm.putString("cca.PortType", self.d_portType[portName])
       ce = ConnectionEvent(event, tm) 
       for listener in listenerList:
          listener.connectionActivity(ce)
       return
 
-   # Methods from gov.cca.Services
+   # Methods from CCAPython.gov.cca.Services
    def getComponentID(self):
       """
       input: none
@@ -221,15 +221,15 @@ class ServicesHandle(Services, ConnectionEventService):
  
    def registerForRelease(self, callback):
       """
-      input: a gov.cca.ComponentRelease object callback
+      input: a CCAPython.gov.cca.ComponentRelease object callback
       output: void
       """
       self.framework.setInstanceRelease(self.componentID, callback)
 
-   # Methods from gov.cca.ports.ServiceRegistry
+   # Methods from CCAPython.gov.cca.ports.ServiceRegistry
    def addService(self, serviceType, portProvider):
       """
-      input: a string serviceType, a gov.cca.ports.ServiceProvider object portProvider
+      input: a string serviceType, a CCAPython.gov.cca.ports.ServiceProvider object portProvider
       output: a boolean
       throws CCAException
       """
@@ -238,7 +238,7 @@ class ServicesHandle(Services, ConnectionEventService):
 
    def addSingletonService(self, serviceType, server):
       """
-      input: a string serviceType, a gov.cca.Port object server
+      input: a string serviceType, a CCAPython.gov.cca.Port object server
       output: a boolean
       throws CCAException
       """
@@ -254,10 +254,10 @@ class ServicesHandle(Services, ConnectionEventService):
       self.framework.removeFromRegistry(serviceType)
       return None
 
-   # Methods from gov.cca.ports.ConnectionEventService
+   # Methods from CCAPython.gov.cca.ports.ConnectionEventService
    def addConnectionEventListener(self, et, cel):
       """
-      input: a gov.cca.ports.EventType et, a gov.cca.ports.ConnectionEventListener cel
+      input: a CCAPython.gov.cca.ports.EventType et, a CCAPython.gov.cca.ports.ConnectionEventListener cel
       output: void
       """
       if et == EventType.Error:
@@ -273,7 +273,7 @@ class ServicesHandle(Services, ConnectionEventService):
 
    def removeConnectionEventListener(self, et, cel):
       """
-      input: a gov.cca.ports.EventType et, a gov.cca.ports.ConnectionEventListener cel
+      input: a CCAPython.gov.cca.ports.EventType et, a CCAPython.gov.cca.ports.ConnectionEventListener cel
       output: void
       """
       if et == EventType.Error:
