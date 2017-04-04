@@ -37,7 +37,10 @@ class DataAccessPort(gov.cca.Port):
       self.data = _data
       super(DataAccessPort, self).__init__(portType)
       return 
- 
+   
+   def getOrder(self):
+      return len(self.data)
+
    def getItem(self, i, j):
       return self.data[i][j]  
   

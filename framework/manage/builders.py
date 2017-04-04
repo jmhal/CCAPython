@@ -226,7 +226,7 @@ class FrameworkHandle(AbstractFramework, BuilderService):
             n_removed_instances = removeInstance(instanceName)
             n_removed_aliases = self.d_aliases.pop(instanceName, None)
             if n_removed_instances != 1 or n_remove_aliases == None :
-               print "Unexpected behavior removind instances."
+               print "Unexpected behavior removing instances."
                print "n_removed_instances: " + n_removed_instances
                print "n_removed_aliases: " + n_removed_aliases
          else :
